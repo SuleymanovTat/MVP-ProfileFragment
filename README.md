@@ -1,1 +1,1 @@
-Coursera projects
+Реализовать паттерн MVP в ProfileFragment.
