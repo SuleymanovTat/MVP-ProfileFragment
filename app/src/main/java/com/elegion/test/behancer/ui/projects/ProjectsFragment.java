@@ -11,6 +11,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.arellomobile.mvp.presenter.InjectPresenter;
+import com.arellomobile.mvp.presenter.ProvidePresenter;
 import com.elegion.test.behancer.R;
 import com.elegion.test.behancer.data.model.project.Project;
 import com.elegion.test.behancer.common.PresenterFragment;
@@ -26,14 +28,24 @@ import java.util.List;
  * Created by Vladislav Falzan.
  */
 
-public class ProjectsFragment extends PresenterFragment<ProjectsPresenter> implements Refreshable, ProjectsView, ProjectsAdapter.OnItemClickListener  {
+public class ProjectsFragment extends PresenterFragment implements Refreshable, ProjectsView, ProjectsAdapter.OnItemClickListener  {
 
     private RecyclerView mRecyclerView;
     private RefreshOwner mRefreshOwner;
     private View mErrorView;
     private Storage mStorage;
     private ProjectsAdapter mProjectsAdapter;
-    private ProjectsPresenter mPresenter;
+    @InjectPresenter
+    ProjectsPresenter mPresenter;
+
+    @ProvidePresenter
+    ProjectsPresenter providePresenter() {
+        return new ProjectsPresenter(mStorage);
+    }
+    @Override
+    protected ProjectsPresenter getPresenter() {
+        return mPresenter;
+    }
 
     public static ProjectsFragment newInstance() {
         return new ProjectsFragment();
@@ -74,16 +86,10 @@ public class ProjectsFragment extends PresenterFragment<ProjectsPresenter> imple
         mProjectsAdapter = new ProjectsAdapter(this);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mRecyclerView.setAdapter(mProjectsAdapter);
-
-        mPresenter = new ProjectsPresenter(this, mStorage);
-
         onRefreshData();
     }
 
-    @Override
-    protected ProjectsPresenter getPresenter() {
-        return mPresenter;
-    }
+
 
     @Override
     public void onDetach() {

@@ -10,6 +10,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.arellomobile.mvp.presenter.InjectPresenter;
+import com.arellomobile.mvp.presenter.ProvidePresenter;
 import com.elegion.test.behancer.R;
 import com.elegion.test.behancer.common.PresenterFragment;
 import com.elegion.test.behancer.common.RefreshOwner;
@@ -19,13 +21,7 @@ import com.elegion.test.behancer.data.model.user.User;
 import com.elegion.test.behancer.utils.DateUtils;
 import com.squareup.picasso.Picasso;
 
-import io.reactivex.disposables.Disposable;
-
-/**
- * Created by Vladislav Falzan.
- */
-
-public class ProfileFragment extends PresenterFragment<ProfilePresenter> implements Refreshable, ProfileView {
+public class ProfileFragment extends PresenterFragment implements Refreshable, ProfileView {
 
     public static final String PROFILE_KEY = "PROFILE_KEY";
 
@@ -39,7 +35,22 @@ public class ProfileFragment extends PresenterFragment<ProfilePresenter> impleme
     private TextView mProfileName;
     private TextView mProfileCreatedOn;
     private TextView mProfileLocation;
-    private ProfilePresenter mPresenter;
+
+    @InjectPresenter
+    ProfilePresenter mPresenter;
+
+    @ProvidePresenter
+    ProfilePresenter providePresenter() {
+        if (getArguments() != null) {
+            mUsername = getArguments().getString(PROFILE_KEY);
+        }
+        return new ProfilePresenter(mStorage, mUsername);
+    }
+
+    @Override
+    protected ProfilePresenter getPresenter() {
+        return mPresenter;
+    }
 
     public static ProfileFragment newInstance(Bundle args) {
         ProfileFragment fragment = new ProfileFragment();
@@ -81,7 +92,6 @@ public class ProfileFragment extends PresenterFragment<ProfilePresenter> impleme
             getActivity().setTitle(mUsername);
         }
         mProfileView.setVisibility(View.VISIBLE);
-        mPresenter = new ProfilePresenter(this, mStorage, mUsername);
         onRefreshData();
     }
 
@@ -90,10 +100,6 @@ public class ProfileFragment extends PresenterFragment<ProfilePresenter> impleme
         mPresenter.getProfile();
     }
 
-    @Override
-    protected ProfilePresenter getPresenter() {
-        return mPresenter;
-    }
 
     @Override
     public void onDetach() {

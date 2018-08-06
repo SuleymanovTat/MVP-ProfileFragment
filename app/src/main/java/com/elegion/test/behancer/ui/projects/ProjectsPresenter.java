@@ -1,9 +1,10 @@
 package com.elegion.test.behancer.ui.projects;
 
+import com.arellomobile.mvp.InjectViewState;
 import com.elegion.test.behancer.BuildConfig;
 import com.elegion.test.behancer.common.BasePresenter;
-import com.elegion.test.behancer.utils.ApiUtils;
 import com.elegion.test.behancer.data.Storage;
+import com.elegion.test.behancer.utils.ApiUtils;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
@@ -11,14 +12,12 @@ import io.reactivex.schedulers.Schedulers;
 /**
  * Created by Vladislav Falzan.
  */
+@InjectViewState
+public class ProjectsPresenter extends BasePresenter<ProjectsView> {
 
-public class ProjectsPresenter extends BasePresenter {
-
-    private final ProjectsView mView;
     private final Storage mStorage;
 
-    public ProjectsPresenter(ProjectsView view, Storage storage) {
-        mView = view;
+    public ProjectsPresenter(Storage storage) {
         mStorage = storage;
     }
 
@@ -30,15 +29,15 @@ public class ProjectsPresenter extends BasePresenter {
                         .onErrorReturn(throwable ->
                                 ApiUtils.NETWORK_EXCEPTIONS.contains(throwable.getClass()) ? mStorage.getProjects() : null)
                         .observeOn(AndroidSchedulers.mainThread())
-                        .doOnSubscribe(disposable -> mView.showRefresh())
-                        .doFinally(mView::hideRefresh)
+                        .doOnSubscribe(disposable -> getViewState().showRefresh())
+                        .doFinally(getViewState()::hideRefresh)
                         .subscribe(
-                                response -> mView.showProjects(response.getProjects()),
-                                throwable -> mView.showError())
+                                response -> getViewState().showProjects(response.getProjects()),
+                                throwable -> getViewState().showError())
         );
     }
 
     public void openProfileFragment(String username) {
-        mView.openProfileFragment(username);
+        getViewState().openProfileFragment(username);
     }
 }
