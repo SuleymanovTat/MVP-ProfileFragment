@@ -1,5 +1,7 @@
 package com.elegion.test.behancer.ui.projects;
 
+import android.util.Log;
+
 import com.arellomobile.mvp.InjectViewState;
 import com.elegion.test.behancer.BuildConfig;
 import com.elegion.test.behancer.common.BasePresenter;
@@ -33,6 +35,23 @@ public class ProjectsPresenter extends BasePresenter<ProjectsView> {
                         .doFinally(getViewState()::hideRefresh)
                         .subscribe(
                                 response -> getViewState().showProjects(response.getProjects()),
+                                throwable -> getViewState().showError())
+        );
+    }
+
+    public void getUserProjects(String user) {
+        mCompositeDisposable.add(
+                ApiUtils.getApiService().getUserProjects(user)
+                        .subscribeOn(Schedulers.io())
+                        .onErrorReturn(throwable ->
+                                ApiUtils.NETWORK_EXCEPTIONS.contains(throwable.getClass()) ? mStorage.getProjects() : null)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .doOnSubscribe(disposable -> getViewState().showRefresh())
+                        .doFinally(getViewState()::hideRefresh)
+                        .subscribe(
+                                response ->
+                                        getViewState().showProjects(response.getProjects())
+                                ,
                                 throwable -> getViewState().showError())
         );
     }
