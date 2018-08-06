@@ -3,3 +3,5 @@
 Добавил библиотеку Moxy в проект.
 
 Переписал ProjectsFragment & ProfileFragment используя библиотеку Moxy.
+
+Добавил UserProjectsFragment
